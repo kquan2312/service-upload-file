@@ -14,11 +14,22 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
+  origin: (origin, callback) => {
+    const allowedOrigins = [
       'http://localhost:5173',
-      'https://cosplay-shop-mauve.vercel.app'
-    ],
-  });
+      'https://cosplay-shop-mauve.vercel.app',
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('Origin not allowed by CORS'), false);
+  },
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+});
 
   const dataSource = app.get(DataSource);
 
