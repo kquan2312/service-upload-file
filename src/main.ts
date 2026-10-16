@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { isAllowedCorsOrigin } from './common/cors-origin';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,22 +15,17 @@ async function bootstrap() {
   );
 
   app.enableCors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'https://cosplay-shop-mauve.vercel.app',
-    ];
+    origin: (origin, callback) => {
+      if (isAllowedCorsOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
 
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
-
-    callback(new Error('Origin not allowed by CORS'), false);
-  },
-  methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-});
+      callback(new Error('Origin not allowed by CORS'), false);
+    },
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   const dataSource = app.get(DataSource);
 
