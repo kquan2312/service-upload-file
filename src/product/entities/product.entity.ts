@@ -8,6 +8,10 @@ import {
 import { OneToMany } from 'typeorm';
 import { ProductImage } from '../../product-image/entities/product-image.entity';
 
+export interface ProductPrice {
+  fes: number | null;
+  testShoot: number | null;
+}
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -24,13 +28,11 @@ export class Product {
   @Column({ type: 'varchar', length: 255, nullable: true })
 ver: string | null;
 
-  @Column({
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
+   @Column({
+    type: 'jsonb',
     nullable: true,
   })
-  price: number;
+  price: ProductPrice | null;
 
   @Column({
     nullable: true,

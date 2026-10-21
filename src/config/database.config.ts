@@ -1,26 +1,28 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { getDatabaseProfile } from './database-profile';
 
-export const databaseConfig = (): TypeOrmModuleOptions => ({
-  type: 'postgres',
+export const databaseConfig = (): TypeOrmModuleOptions => {
+  const profile = getDatabaseProfile();
+  const ssl = profile === 'local' ? false : { rejectUnauthorized: true };
 
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT || 5432),
+  return {
+    type: 'postgres',
 
-  username: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
+    host: process.env.DATABASE_HOST,
+    port: Number(process.env.DATABASE_PORT || 5432),
 
-  ssl: {
-    rejectUnauthorized: true,
-  },
+    username: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
 
-  extra: {
-    ssl: {
-      rejectUnauthorized: true,
+    ssl,
+
+    extra: {
+      ssl,
     },
-  },
 
-  autoLoadEntities: true,
-  synchronize: false,
-  logging: process.env.NODE_ENV !== 'production',
-});
+    autoLoadEntities: true,
+    synchronize: false,
+    logging: process.env.NODE_ENV !== 'production',
+  };
+};

@@ -31,6 +31,27 @@
 $ npm install
 ```
 
+## Switch between local PostgreSQL and Neon
+
+Create private environment files from the templates:
+
+```powershell
+Copy-Item .env.local.example .env.local
+Copy-Item .env.neon.example .env.neon
+```
+
+Set the connection values in each file, then start the desired profile:
+
+```bash
+npm run start:local
+npm run start:neon
+```
+
+The local profile disables SSL; Neon enables SSL. The regular `npm run start:dev`
+command continues to load `.env` and keeps SSL enabled, preserving the existing
+default behavior. `.env`, `.env.local`, and `.env.neon` are ignored by Git; do
+not put credentials in the example files.
+
 ## Compile and run the project
 
 ```bash

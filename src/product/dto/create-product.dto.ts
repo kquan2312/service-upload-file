@@ -2,8 +2,21 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsObject,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
+
+export class ProductPriceDto {
+  @IsOptional()
+  @IsNumber()
+  fes?: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  testShoot?: number | null;
+}
 export class CreateProductDto {
   @IsString()
   name: string;
@@ -17,8 +30,10 @@ export class CreateProductDto {
   ver?: string;
 
   @IsOptional()
-  @IsNumber()
-  price?: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ProductPriceDto)
+  price?: ProductPriceDto | null;
 
   @IsOptional()
   @IsString()
