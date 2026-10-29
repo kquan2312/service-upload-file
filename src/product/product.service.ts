@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -13,7 +13,34 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  create(dto: CreateProductDto) {
+  private normalizeIdentity(value: string | null | undefined): string {
+    return (value ?? '')
+      .normalize('NFC')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLocaleLowerCase('vi');
+  }
+
+  private identity(name: string, ver?: string | null): string {
+    return `${this.normalizeIdentity(name)}::${this.normalizeIdentity(ver)}`;
+  }
+
+  private async findByIdentity(name: string, ver?: string | null) {
+    const products = await this.productRepository.find();
+    const key = this.identity(name, ver);
+
+    return products.find((product) => this.identity(product.name, product.ver) === key);
+  }
+
+  async create(dto: CreateProductDto) {
+    const duplicate = await this.findByIdentity(dto.name, dto.ver);
+
+    if (duplicate) {
+      throw new ConflictException(
+        `Sản phẩm đã tồn tại: ${duplicate.name}${duplicate.ver ? ` | ${duplicate.ver}` : ''}`,
+      );
+    }
+
     const product = this.productRepository.create({
       ...dto,
       ...(dto.price !== undefined
@@ -22,6 +49,16 @@ export class ProductService {
     });
 
     return this.productRepository.save(product);
+  }
+
+  async upsert(dto: CreateProductDto) {
+    const existing = await this.findByIdentity(dto.name, dto.ver);
+
+    if (!existing) {
+      return { action: 'created' as const, product: await this.create(dto) };
+    }
+
+    return { action: 'updated' as const, product: await this.update(existing.id, dto) };
   }
 
   private normalizePrice(

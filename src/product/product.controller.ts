@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 
@@ -24,6 +25,11 @@ export class ProductController {
     @Body() dto: CreateProductDto,
   ) {
     return this.productService.create(dto);
+  }
+
+  @Put('upsert')
+  upsert(@Body() dto: CreateProductDto) {
+    return this.productService.upsert(dto);
   }
 
   @Get()
